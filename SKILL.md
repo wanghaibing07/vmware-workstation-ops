@@ -1,73 +1,65 @@
 ---
 name: vmware-workstation-ops
-description: Safely inspect and operate VMware Workstation virtual machines, snapshots, clones, and virtual disks, with optional MobaXterm SSH sessions. / 安全检查和操作 VMware Workstation 虚拟机、快照、克隆及虚拟磁盘，并按需处理 MobaXterm SSH 会话。
+description: >-
+  Guide AI agents in inspecting and operating VMware Workstation VMs on Windows.
+  Use when asked to check VM status, start or stop VMs, review snapshots, clones
+  or virtual disks, prepare cloned Linux nodes, or troubleshoot SSH and optional
+  MobaXterm sessions. / 面向 Windows VMware Workstation 的通用 AI Agent 操作指南，
+  适用于虚拟机状态、开关机、快照、克隆、磁盘、Linux 节点身份以及 SSH 连接检查。
 ---
 
-# VMware Workstation Ops | VMware Workstation 操作
+# VMware Workstation Ops | VMware Workstation 虚拟机管理
 
-让 Codex 帮你管理 VMware Workstation 虚拟机，按需处理克隆、快照和 SSH 连接，并核实操作结果。
+本 Skill 供**支持 Agent Skills 的 AI 助手**使用。根据本机实际环境检查和管理 VMware Workstation 虚拟机，按需处理快照、克隆、磁盘与 SSH 连接，并验证操作结果。
 
-Use Codex to manage VMware Workstation VMs, handle clones, snapshots, and SSH sessions when needed, and verify each result.
+This is a **vendor-neutral Agent Skill**. Use the agent's available local tools to inspect and manage VMware Workstation VMs, snapshots, clones, disks, and optional SSH sessions. Verify each outcome on the actual host.
 
-## 使用方式 | How to use this skill
+## 使用原则 | How to use
 
-跟随用户使用的语言回复。先确认用户要完成的具体操作，再只处理相关内容。启动虚拟机、克隆磁盘、修改网络和连接 SSH 是不同的操作；按用户提出的事项逐项处理。
+- 按用户使用的语言回复。先确定目标虚拟机、用户希望完成的操作与预期结果；只处理相关内容。
+- 用当前 AI 助手**实际可用**的工具工作：PowerShell、命令行、文件访问或受支持的界面操作。不要假定任何指定的 AI 产品或工具集已经可用。
+- 如果不能访问本机或某项工具，说明已验证的信息和缺少的能力；不要把建议执行的命令说成已执行。
+- 对可能影响现有虚拟机、磁盘或网络的操作，先说明将修改什么以及影响；对尚未获授权的破坏性变更先取得确认。
 
-Reply in the user's language. Identify the requested action and keep the work focused on it. VM power, cloning disks, network changes, and SSH connections are separate operations; handle the items the user requests.
+- Reply in the user's language. Identify the target VM, requested action, and expected result; stay focused on that task.
+- Use **the tools actually available** to the current agent: PowerShell, CLI, file access, or supported UI controls. Do not depend on a particular AI vendor or assume tool access.
+- When host access or a required tool is unavailable, distinguish observations from proposed commands; never present a suggested command as executed.
+- Explain the target and impact before changes to VMs, disks, or networks. Obtain approval before destructive changes that the user has not authorized.
 
-## 操作步骤 | Workflow
+## 执行流程 | Workflow
 
-1. **查看本机环境。** 找出 Workstation 版本、相关命令和目标 VMX（虚拟机配置）文件；阅读本机工具帮助。工具位置、参数和能力随版本及安装方式变化。
+1. **识别环境。** 检查 Windows 主机、Workstation 版本、目标 `*.vmx` 路径以及可用命令。参考本机帮助与对应版本文档，不套用未经确认的旧参数。
 
-   **Check the local setup.** Identify the Workstation version, relevant commands, and target VMX configuration files; read the installed tools' help. Paths, options, and capabilities vary by version and installation.
+   **Identify the environment.** Check the Windows host, Workstation version, target `*.vmx` path, and available tools. Read the installed help and relevant version documentation.
 
-2. **先读当前状态。** 查看虚拟机电源、快照与磁盘链、可用主机资源，以及虚拟机内操作系统（Guest OS）或 SSH 状态。把实际文件与 VMware 当前显示的状态分别核对。
+2. **读取现状。** 按任务检查虚拟机运行状态、快照与磁盘链、可用空间、虚拟机内系统及网络状态。区分磁盘文件、Workstation 显示状态与 Guest OS 状态。
 
-   **Read the current state first.** Check VM power, snapshots and disk chains, available host resources, and the Guest OS (the operating system inside the VM) or SSH state. Compare actual files with the state shown by VMware.
+   **Inspect the current state.** Check VM power, snapshots, disk dependencies, free space, Guest OS, and network state as relevant. Distinguish files on disk from Workstation UI and Guest OS state.
 
-3. **说明将要做什么。** 修改文件、磁盘、虚拟机、Guest OS 或网络前，先说明目标虚拟机、具体变化和可用预览方式。按用户提出的操作逐项处理。
+3. **选择操作并预览。** 选用当前版本支持的 `vmrun`、`vmware.exe`、`vmware-vdiskmanager`、PowerShell 或其他可用方式。修改关键文件前备份；涉及配置文件时保留编码，使用临时文件完整写入、核对后替换。
 
-   **State the action.** Before changing files, disks, VMs, the Guest OS, or its network, identify the target VM, planned change, and available preview. Handle each item the user requested.
+   **Choose and preview the action.** Use supported local commands or available UI controls. Back up important files before editing; preserve encoding and verify temporary-file writes before replacement.
 
-4. **逐步执行并记录结果。** 使用本机版本支持的命令。先预览变更；修改关键文件时先备份，再通过临时文件完整写入并替换。每项完成后核实结果，再继续下一项。
+4. **逐项执行并复查。** 完成一项后重新读取实际状态，再继续下一项。检查内容由任务决定：VMX、磁盘文件、运行状态、Guest 服务、网络连通性、SSH 认证或 MobaXterm 会话。
 
-   **Work one step at a time and record the result.** Use commands supported by the installed version. Preview changes first. Back up important files, write through a temporary file, and verify each result before proceeding.
+   **Execute and verify one step at a time.** Re-read actual state after each action. Depending on the task, verify VMX and disk files, power, Guest services, network reachability, SSH authentication, or an active MobaXterm session.
 
-5. **确认用户关心的结果。** 分别查看虚拟机文件、电源状态、Workstation 库、Guest 服务、网络连通性、SSH 认证或 MobaXterm 会话；按任务选择需要的项目。
+5. **清楚交付结果。** 报告做了什么、依据什么确认、哪些事项仍待处理；明确区分“已执行并验证”与“提供建议但未执行”。
 
-   **Verify the result the user cares about.** Check VM files, power state, Workstation library, Guest services, network access, SSH authentication, or the MobaXterm session separately. Select the checks that match the task.
+   **Report the result.** State what changed, the evidence that confirms it, and anything still pending. Distinguish verified actions from unexecuted recommendations.
 
-6. **简明汇报。** 说清已完成的操作、观察到的结果，以及仍待处理的具体事项。
+## 关键检查 | Important checks
 
-   **Report clearly.** State what was done, what you observed, and any specific item that still needs attention.
+- **完整克隆 / Full clone：** 需要独立副本时，优先在另一位置创建完整克隆，保留源虚拟机及原始磁盘链。 / Prefer a full clone in a separate location when an independent copy is needed; preserve the original VM and disk chain.
+- **链接克隆 / Linked clone：** 使用前确认父虚拟机、快照及磁盘链持续可用。 / Ensure the parent VM, snapshot, and disk chain remain accessible.
+- **集群节点 / Cluster nodes：** 克隆加入集群前，逐台核对主机名、IP、MAC、系统标识（如 machine-id）和 SSH 主机密钥的唯一性。 / Before joining clones to a cluster, verify unique hostnames, IPs, MACs, system IDs, and SSH host keys.
+- **分层验证 / Layered checks：** 虚拟机开机、TCP 端口可达、SSH 认证成功、终端已登录是不同状态；按用户目标逐项核实。 / VM power, TCP reachability, SSH authentication, and an active terminal are separate facts.
+- **凭据 / Credentials：** 密码、令牌与私钥留在本机安全存储；输出仅保留脱敏信息。 / Keep credentials in local secure storage and sanitize reports.
 
-## 操作要点 | Practical guidance
+## 按需阅读 | Read references as needed
 
-- 保留源虚拟机与原始磁盘链；需要以源机为基础制作模板时，优先在独立位置创建完整克隆。
+- [Workstation 虚拟机、快照、克隆与磁盘 / Workstation operations](references/workstation-operations.md)
+- [Windows 命令、PowerShell 与文件验证 / Windows and PowerShell](references/windows-powershell.md)
+- [MobaXterm 与 SSH 连接 / MobaXterm and SSH](references/mobaxterm-ssh.md)
 
-  Preserve the source VM and its original disk chain. When preparing a template from a source VM, prefer a full clone in a separate location.
-- 使用链接克隆时，同时检查父虚拟机、快照和磁盘链的可用性。
-
-  With a linked clone, check that its parent VM, snapshot, and disk chain remain available.
-- 克隆加入集群前，核实每台虚拟机内操作系统的主机名、IP、MAC、系统 ID 和 SSH 主机密钥各不相同。
-
-  Before adding clones to a cluster, verify that each Guest OS has a distinct hostname, IP, MAC, system ID, and SSH host key.
-- 用 VMware 工具管理虚拟机，用 SSH 工具连接虚拟机内的操作系统；分别核实工具返回的信息。
-
-  Use VMware tools to manage VMs and SSH tools to connect to Guest operating systems; verify each tool's result separately.
-- 通过 MobaXterm 连接时，区分 TCP 可达、SSH 认证成功和终端已登录这三种状态。
-
-  For MobaXterm connections, distinguish TCP reachability, successful SSH authentication, and a logged-in terminal.
-- 将密码、私钥、令牌和完整凭据留在本机安全存储中；输出和仓库只保留脱敏后的必要信息。
-
-  Keep passwords, private keys, tokens, and full credentials in secure local storage. Include only the minimum sanitized details in output and repository files.
-- 文件、磁盘或 Guest 配置每次只改用户提出的部分；操作后重新读取并核对。
-
-  Change only the file, disk, or Guest setting requested by the user; read it back and verify the result.
-
-## 参考资料 | References
-
-- [Workstation、快照与克隆 / Workstation, snapshots, and clones](references/workstation-operations.md)
-- [Windows 与 PowerShell / Windows and PowerShell](references/windows-powershell.md)
-- [MobaXterm 与 SSH / MobaXterm and SSH](references/mobaxterm-ssh.md)
-- [Codex skill authoring / Codex skill 编写](https://learn.chatgpt.com/docs/build-skills)
+Agent Skills 格式 / Agent Skills format: https://agentskills.io/specification
